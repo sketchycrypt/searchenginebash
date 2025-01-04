@@ -1,13 +1,9 @@
 #!/bin/bash
 
-# TODO // MAKE IT READ .ENV FILE SAVED VARIABLE
+source ./browser
+source ./urlencode
 
-browser(){
-  printf "\033c"
-  printf "Please select your preferred browser (saved to memory)\n"
-  printf "1. Firefox (recommended)\n2. Google Chrome\n3. Microsoft Edge\n"
-  read -p "" prefBrowser
-}
+BROWSER_VALUE=$(grep "^$BROWSER=" "$DIR/$CONFIG_FILE" | cut -d'=' -f2)
 
 choice() {
   printf "\033c"
@@ -39,8 +35,14 @@ choice() {
 }
 
 selected_engine=""
-browser
-choice 
+
+if [[ -z $BROWSER_VALUE ]]; then
+    selectBrowser
+else
+    prefBrowser="$BROWSER_VALUE"
+fi
+
+choice
 
 while true; do
   printf "exit to interrupt\nselect to re-select search engine\n\n"
@@ -63,17 +65,17 @@ while true; do
 
   case "$prefBrowser" in
     1)
-      firefox "${selected_engine}$(printf $query | sed 's/ /+/g')" &
+      firefox "${selected_engine}$(urlencode "$query")" &
       ;;
     2)
-      chrome "${selected_engine}$(printf $query | sed 's/ /+/g')" &
+      chrome "${selected_engine}$(urlencode "$query")" &
       ;;
     3)
-      microsoft-edge "${selected_engine}$(printf $query | sed 's/ /+/g')" &
+      microsoft-edge "${selected_engine}$(urlencode "$query")" &
       ;;
     *)
       printf "Error"
       exit 1
       ;;
-esac
+  esac
 done

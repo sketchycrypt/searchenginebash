@@ -11,17 +11,18 @@ selectBrowser(){
     read -p "" prefBrowser
 }
 
-selectBrowser
-
-if [[ ! -f $DIR/$CONFIG_FILE ]]; then
-    echo "$DIR/$CONFIG_FILE not found. Creating a new one."
-    touch $DIR/$CONFIG_FILE
-fi
-
 if grep -q "^$BROWSER=" "$DIR/$CONFIG_FILE"; then
-    sed -i "s/^$BROWSER=.*/$BROWSER=$prefBrowser/" "$DIR/$CONFIG_FILE"
-    echo "Updated $BROWSER to $prefBrowser in $DIR/$CONFIG_FILE."
+    currentBrowser=$(grep "^$BROWSER=" "$DIR/$CONFIG_FILE" | cut -d'=' -f2)
+
+    if [[ -z $currentBrowser ]]; then
+        selectBrowser
+        echo "$BROWSER=$prefBrowser" > "$DIR/$CONFIG_FILE"
+        echo "Set $BROWSER to $prefBrowser in $DIR/$CONFIG_FILE."
+    else
+        echo "Browser is already set to $currentBrowser."
+    fi
 else
+    selectBrowser
     echo "$BROWSER=$prefBrowser" >> "$DIR/$CONFIG_FILE"
     echo "Added $BROWSER with value $prefBrowser to $DIR/$CONFIG_FILE."
 fi
