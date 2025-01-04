@@ -1,11 +1,18 @@
 #!/bin/bash
 
+source ./browser
+source ./urlencode
+
+BROWSER_VALUE=$(grep "^$BROWSER=" "$DIR/$CONFIG_FILE" | cut -d'=' -f2)
+
 choice() {
-  echo "Select search engine:"
-  echo "1. Google"
-  echo "2. DuckDuckGo"
-  echo "3. Exit"
-  read -p "Enter your choice (1/2/3): " choice
+  printf "\033c"
+  printf "Select search engine:\n"
+  printf "1. Google\n"
+  printf "2. DuckDuckGo\n"
+  printf "3. Bing\n"
+  printf "4. Exit\n"
+  read -p "Enter your choice (1/2/3/4): " choice
 
   case $choice in
   1)
@@ -15,24 +22,34 @@ choice() {
     selected_engine="https://duckduckgo.com/?q="
     ;;
   3)
-    echo "Exiting program"...
+    selected_engine="https://bing.com/search?q="
+    ;;
+  4)
+    printf "Exiting program"...
     exit
     ;;
   *)
-    echo "Invalid choice. Please select 1 or 2."
+    printf "Invalid choice. Please select a valid choice."
     ;;
   esac
 }
 
 selected_engine=""
-choice 
+
+if [[ -z $BROWSER_VALUE ]]; then
+    selectBrowser
+else
+    prefBrowser="$BROWSER_VALUE"
+fi
+
+choice
 
 while true; do
   printf "exit to interrupt\nselect to re-select search engine\n\n"
   read -p "Enter query: " query
 
   if [[ $query == "exit" ]]; then
-    echo "Exiting program."
+    printf "Exiting program."
     break
   elif [[ $query == "select" ]]; then
     choice
@@ -40,10 +57,25 @@ while true; do
   fi
 
   if [[ -z $query ]]; then
-    echo "Query cannot be empty."
+    printf "Query cannot be empty."
     continue
   fi
 
   printf "\033c"
-  firefox "${selected_engine}$(echo $query | sed 's/ /+/g')" &
+
+  case "$prefBrowser" in
+    1)
+      firefox "${selected_engine}$(urlencode "$query")" &
+      ;;
+    2)
+      chrome "${selected_engine}$(urlencode "$query")" &
+      ;;
+    3)
+      microsoft-edge "${selected_engine}$(urlencode "$query")" &
+      ;;
+    *)
+      printf "Error"
+      exit 1
+      ;;
+  esac
 done
