@@ -1,0 +1,28 @@
+#!/bin/bash
+
+BROWSER="BROWSER"
+CONFIG_FILE="config.txt"
+DIR="$(cd "$(dirname "$0")" && pwd)"
+
+selectBrowser(){
+    printf "\033c"
+    printf "Select your browser\n"
+    printf "1. Firefox (recommended)\n2. Google Chrome\n3. Microsoft Edge\n"
+    read -p "" prefBrowser
+}
+
+if grep -q "^$BROWSER=" "$DIR/$CONFIG_FILE"; then
+    currentBrowser=$(grep "^$BROWSER=" "$DIR/$CONFIG_FILE" | cut -d'=' -f2)
+
+    if [[ -z $currentBrowser ]]; then
+        selectBrowser
+        echo "$BROWSER=$prefBrowser" > "$DIR/$CONFIG_FILE"
+        echo "Set $BROWSER to $prefBrowser in $DIR/$CONFIG_FILE."
+    else
+        echo "Browser is already set to $currentBrowser."
+    fi
+else
+    selectBrowser
+    echo "$BROWSER=$prefBrowser" >> "$DIR/$CONFIG_FILE"
+    echo "Added $BROWSER with value $prefBrowser to $DIR/$CONFIG_FILE."
+fi
